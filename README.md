@@ -1,13 +1,15 @@
 # SunApp
 
-A sunrise/sunset calculator. Give it a latitude, longitude, and date. It gives you sunrise, sunset, and day length.
+A sunrise/sunset calculator with timezone support. Go backend, React frontend.
 
 ## Features
 
 - Calculates sunrise and sunset times for any location on Earth
+- Explicit IANA timezone support (`tz` parameter)
+- Returns times in both UTC and local timezone
 - Handles polar day/night edge cases gracefully
 - Responsive dark-themed UI
-- Input validation for coordinates and dates
+- Input validation for coordinates, dates, and timezones
 - Fast, dependency-free Go backend
 
 ## Tech Stack
@@ -46,6 +48,7 @@ Open http://localhost:5173 in your browser.
 Latitude:  51.5074
 Longitude: -0.1278
 Date:      2024-09-22
+Timezone:  Europe/London
 ```
 
 Expected result:
@@ -64,13 +67,17 @@ Query parameters:
 - `lat` (required) — Latitude, -90 to 90
 - `lon` (required) — Longitude, -180 to 180
 - `date` (optional) — Date in YYYY-MM-DD format, defaults to today
+- `tz` (optional) — IANA timezone string, e.g. `Europe/Helsinki`, `America/New_York` (defaults to `UTC`)
 
 Response:
 ```json
 {
-  "sunrise": "06:12",
-  "sunset": "18:45",
-  "day_length": "12h 33m"
+  "sunrise_utc": "04:53",
+  "sunset_utc": "19:50",
+  "sunrise_local": "07:53",
+  "sunset_local": "22:50",
+  "day_length": "14h 57m",
+  "timezone": "Europe/Helsinki"
 }
 ```
 
@@ -120,7 +127,9 @@ The test suite covers:
 - Standard locations (Helsinki, NYC, London, Sydney)
 - Equatorial regions
 - Polar day/night scenarios
-- helper function edge cases
+- Europe/Helsinki summer and winter edge cases
+- Helper function edge cases
+- Invalid timezone handling
 
 ## Building for Production
 
@@ -145,7 +154,7 @@ Calculations use the NOAA solar position formulas:
 - Solar declination angle
 - Hour angle with 90.833 zenith (civil twilight standard)
 
-Timezone approximation uses longitude-based offset. Results are correct enough for planning purposes, not maritime navigation.
+Timezone handling uses Go's `time.LoadLocation` with explicit IANA timezone strings, properly accounting for daylight saving time transitions. Results are correct enough for planning purposes, not maritime navigation.
 
 ## License
 
