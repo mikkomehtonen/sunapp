@@ -2,8 +2,6 @@ import { useState } from 'react'
 import './App.css'
 
 interface SunResult {
-  sunrise_utc: string
-  sunset_utc: string
   sunrise_local: string
   sunset_local: string
   day_length: string
@@ -142,19 +140,11 @@ function App() {
             <h2>Results ({result.timezone})</h2>
             <div className="result-cards">
               <div className="card">
-                <h3>Sunrise (UTC)</h3>
-                <p className="time">{result.sunrise_utc}</p>
-              </div>
-              <div className="card">
-                <h3>Sunset (UTC)</h3>
-                <p className="time">{result.sunset_utc}</p>
-              </div>
-              <div className="card">
-                <h3>Sunrise ({result.timezone})</h3>
+                <h3>Sunrise</h3>
                 <p className="time">{result.sunrise_local}</p>
               </div>
               <div className="card">
-                <h3>Sunset ({result.timezone})</h3>
+                <h3>Sunset</h3>
                 <p className="time">{result.sunset_local}</p>
               </div>
               <div className="card">
