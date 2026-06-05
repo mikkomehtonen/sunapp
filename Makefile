@@ -4,7 +4,7 @@ dev-backend:
 	cd backend && go run cmd/server/main.go
 
 dev-frontend:
-	cd frontend && npm run dev
+	cd frontend && npm run dev -- --host 0.0.0.0
 
 test:
 	cd backend && go test ./internal/sun/... -v

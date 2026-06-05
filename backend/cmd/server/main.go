@@ -22,6 +22,7 @@ func sunHandler(w http.ResponseWriter, r *http.Request) {
 	latStr := query.Get("lat")
 	lonStr := query.Get("lon")
 	dateStr := query.Get("date")
+	tz := query.Get("tz")
 
 	if latStr == "" || lonStr == "" {
 		http.Error(w, "lat and lon query parameters are required", http.StatusBadRequest)
@@ -59,7 +60,7 @@ func sunHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	result, err := sun.CalculateSunTimes(lat, lon, date)
+	result, err := sun.CalculateSunTimes(lat, lon, date, tz)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error calculating sunrise/sunset: %v", err), http.StatusInternalServerError)
 		return

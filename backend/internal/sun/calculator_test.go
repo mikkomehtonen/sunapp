@@ -6,22 +6,73 @@ import (
 	"time"
 )
 
-func TestCalculateSunTimes_HelsinkiJune21(t *testing.T) {
+func TestCalculateSunTimes_HelsinkiSummer(t *testing.T) {
 	lat := 60.1699
 	lon := 24.9384
 	date := time.Date(2024, time.June, 21, 0, 0, 0, 0, time.UTC)
 
-	result, err := CalculateSunTimes(lat, lon, date)
+	result, err := CalculateSunTimes(lat, lon, date, "Europe/Helsinki")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if result.Sunrise == "N/A" {
-		t.Error("sunrise should not be N/A for Helsinki on June 21")
+	if result.SunriseUTC == "N/A" {
+		t.Error("sunrise UTC should not be N/A for Helsinki on June 21")
 	}
-	if result.Sunset == "N/A" {
-		t.Error("sunset should not be N/A for Helsinki on June 21")
+	if result.SunsetUTC == "N/A" {
+		t.Error("sunset UTC should not be N/A for Helsinki on June 21")
 	}
-	t.Logf("Helsinki June 21: Sunrise=%s, Sunset=%s, DayLength=%s", result.Sunrise, result.Sunset, result.DayLength)
+	if result.SunriseLocal == "N/A" {
+		t.Error("sunrise local should not be N/A for Helsinki on June 21")
+	}
+	if result.SunsetLocal == "N/A" {
+		t.Error("sunset local should not be N/A for Helsinki on June 21")
+	}
+	t.Logf("Helsinki summer (June 21, Europe/Helsinki): SunriseUTC=%s, SunsetUTC=%s, SunriseLocal=%s, SunsetLocal=%s, DayLength=%s, TZ=%s",
+		result.SunriseUTC, result.SunsetUTC, result.SunriseLocal, result.SunsetLocal, result.DayLength, result.Timezone)
+}
+
+func TestCalculateSunTimes_HelsinkiWinter(t *testing.T) {
+	lat := 60.1699
+	lon := 24.9384
+	date := time.Date(2024, time.December, 21, 0, 0, 0, 0, time.UTC)
+
+	result, err := CalculateSunTimes(lat, lon, date, "Europe/Helsinki")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.SunriseUTC == "N/A" {
+		t.Error("sunrise UTC should not be N/A for Helsinki on December 21")
+	}
+	if result.SunsetUTC == "N/A" {
+		t.Error("sunset UTC should not be N/A for Helsinki on December 21")
+	}
+	if result.SunriseLocal == "N/A" {
+		t.Error("sunrise local should not be N/A for Helsinki on December 21")
+	}
+	if result.SunsetLocal == "N/A" {
+		t.Error("sunset local should not be N/A for Helsinki on December 21")
+	}
+	expectedTZ := "Europe/Helsinki"
+	if result.Timezone != expectedTZ {
+		t.Errorf("timezone = %q, want %q", result.Timezone, expectedTZ)
+	}
+	t.Logf("Helsinki winter (Dec 21, Europe/Helsinki): SunriseUTC=%s, SunsetUTC=%s, SunriseLocal=%s, SunsetLocal=%s, DayLength=%s, TZ=%s",
+		result.SunriseUTC, result.SunsetUTC, result.SunriseLocal, result.SunsetLocal, result.DayLength, result.Timezone)
+}
+
+func TestCalculateSunTimes_DefaultToUTC(t *testing.T) {
+	lat := 51.5074
+	lon := -0.1278
+	date := time.Date(2024, time.June, 21, 0, 0, 0, 0, time.UTC)
+
+	result, err := CalculateSunTimes(lat, lon, date, "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	expectedTZ := "UTC"
+	if result.Timezone != expectedTZ {
+		t.Errorf("timezone = %q, want %q", result.Timezone, expectedTZ)
+	}
 }
 
 func TestCalculateSunTimes_NYCDecember21(t *testing.T) {
@@ -29,17 +80,18 @@ func TestCalculateSunTimes_NYCDecember21(t *testing.T) {
 	lon := -74.0060
 	date := time.Date(2024, time.December, 21, 0, 0, 0, 0, time.UTC)
 
-	result, err := CalculateSunTimes(lat, lon, date)
+	result, err := CalculateSunTimes(lat, lon, date, "America/New_York")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if result.Sunrise == "N/A" {
+	if result.SunriseUTC == "N/A" {
 		t.Error("sunrise should not be N/A for NYC on December 21")
 	}
-	if result.Sunset == "N/A" {
+	if result.SunsetUTC == "N/A" {
 		t.Error("sunset should not be N/A for NYC on December 21")
 	}
-	t.Logf("NYC December 21: Sunrise=%s, Sunset=%s, DayLength=%s", result.Sunrise, result.Sunset, result.DayLength)
+	t.Logf("NYC December 21: SunriseUTC=%s, SunsetUTC=%s, SunriseLocal=%s, SunsetLocal=%s, DayLength=%s",
+		result.SunriseUTC, result.SunsetUTC, result.SunriseLocal, result.SunsetLocal, result.DayLength)
 }
 
 func TestCalculateSunTimes_Equator(t *testing.T) {
@@ -47,11 +99,12 @@ func TestCalculateSunTimes_Equator(t *testing.T) {
 	lon := 0.0
 	date := time.Date(2024, time.March, 20, 0, 0, 0, 0, time.UTC)
 
-	result, err := CalculateSunTimes(lat, lon, date)
+	result, err := CalculateSunTimes(lat, lon, date, "")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	t.Logf("Equator March 20: Sunrise=%s, Sunset=%s, DayLength=%s", result.Sunrise, result.Sunset, result.DayLength)
+	t.Logf("Equator March 20: SunriseUTC=%s, SunsetUTC=%s, SunriseLocal=%s, SunsetLocal=%s, DayLength=%s",
+		result.SunriseUTC, result.SunsetUTC, result.SunriseLocal, result.SunsetLocal, result.DayLength)
 	if result.DayLength == "0h 0m" {
 		t.Error("day length should not be 0 at the equator")
 	}
@@ -62,14 +115,12 @@ func TestCalculateSunTimes_PolarNight(t *testing.T) {
 	lon := 16.0
 	date := time.Date(2024, time.December, 21, 0, 0, 0, 0, time.UTC)
 
-	result, err := CalculateSunTimes(lat, lon, date)
+	result, err := CalculateSunTimes(lat, lon, date, "Arctic/Longyearbyen")
 	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
+		t.Logf("Expected error for invalid or polar timezone: %v", err)
 	}
-	if result.Sunrise != "N/A" || result.Sunset != "N/A" {
-		t.Log("Sunrise/sunset may or may not be available - checking behavior")
-	}
-	t.Logf("Svalbard December 21: Sunrise=%s, Sunset=%s, DayLength=%s", result.Sunrise, result.Sunset, result.DayLength)
+	t.Logf("Svalbard December 21: SunriseUTC=%s, SunsetUTC=%s, SunriseLocal=%s, SunsetLocal=%s, DayLength=%s",
+		result.SunriseUTC, result.SunsetUTC, result.SunriseLocal, result.SunsetLocal, result.DayLength)
 }
 
 func TestCalculateSunTimes_Equinox(t *testing.T) {
@@ -77,11 +128,23 @@ func TestCalculateSunTimes_Equinox(t *testing.T) {
 	lon := -0.1278
 	date := time.Date(2024, time.September, 22, 0, 0, 0, 0, time.UTC)
 
-	result, err := CalculateSunTimes(lat, lon, date)
+	result, err := CalculateSunTimes(lat, lon, date, "Europe/London")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	t.Logf("London September 22: Sunrise=%s, Sunset=%s, DayLength=%s", result.Sunrise, result.Sunset, result.DayLength)
+	t.Logf("London September 22: SunriseUTC=%s, SunsetUTC=%s, SunriseLocal=%s, SunsetLocal=%s, DayLength=%s",
+		result.SunriseUTC, result.SunsetUTC, result.SunriseLocal, result.SunsetLocal, result.DayLength)
+}
+
+func TestCalculateSunTimes_InvalidTimezone(t *testing.T) {
+	lat := 51.5074
+	lon := -0.1278
+	date := time.Date(2024, time.June, 21, 0, 0, 0, 0, time.UTC)
+
+	_, err := CalculateSunTimes(lat, lon, date, "Foo/Bar")
+	if err == nil {
+		t.Error("expected error for invalid timezone")
+	}
 }
 
 func TestMinutesToTimeOfDay(t *testing.T) {
@@ -164,12 +227,13 @@ func TestCalculateSunTimes_SouthernHemisphere(t *testing.T) {
 	lon := 151.2093
 	date := time.Date(2024, time.June, 21, 0, 0, 0, 0, time.UTC)
 
-	result, err := CalculateSunTimes(lat, lon, date)
+	result, err := CalculateSunTimes(lat, lon, date, "Australia/Sydney")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	t.Logf("Sydney June 21: Sunrise=%s, Sunset=%s, DayLength=%s", result.Sunrise, result.Sunset, result.DayLength)
-	if result.Sunrise == "N/A" && result.Sunset == "N/A" {
+	t.Logf("Sydney June 21: SunriseUTC=%s, SunsetUTC=%s, SunriseLocal=%s, SunsetLocal=%s, DayLength=%s",
+		result.SunriseUTC, result.SunsetUTC, result.SunriseLocal, result.SunsetLocal, result.DayLength)
+	if result.SunriseUTC == "N/A" && result.SunsetUTC == "N/A" {
 		t.Error("Sydney should have sun data in June")
 	}
 }

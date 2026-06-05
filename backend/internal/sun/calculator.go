@@ -13,14 +13,23 @@ const (
 
 // Result holds sunrise/sunset calculation results.
 type Result struct {
-	Sunrise   string `json:"sunrise"`
-	Sunset    string `json:"sunset"`
-	DayLength string `json:"day_length"`
+	SunriseUTC    string `json:"sunrise_utc"`
+	SunsetUTC     string `json:"sunset_utc"`
+	SunriseLocal  string `json:"sunrise_local"`
+	SunsetLocal   string `json:"sunset_local"`
+	DayLength     string `json:"day_length"`
+	Timezone      string `json:"timezone"`
 }
 
 // CalculateSunTimes computes sunrise and sunset times for a given
-// latitude, longitude, and date (expected UTC).
-func CalculateSunTimes(lat, lon float64, date time.Time) (*Result, error) {
+// latitude, longitude, date (UTC), and IANA timezone string.
+// If tz is empty, it defaults to UTC.
+func CalculateSunTimes(lat, lon float64, date time.Time, tz string) (*Result, error) {
+	loc, err := resolveLocation(tz)
+	if err != nil {
+		return nil, fmt.Errorf("invalid timezone %q: %w", tz, err)
+	}
+
 	year := date.Year()
 	dayOfYear := date.YearDay()
 	yearLen := 365.0
@@ -28,54 +37,82 @@ func CalculateSunTimes(lat, lon float64, date time.Time) (*Result, error) {
 		yearLen = 366.0
 	}
 
-	// Fractional year in radians
 	b := 2 * math.Pi * float64(dayOfYear-1) / yearLen
 
-	// Equation of time in minutes
 	eqtime := 229.18 * (0.000075 + 0.001868*math.Cos(b) - 0.032077*math.Sin(b) -
 		0.014615*math.Cos(2*b) - 0.040849*math.Sin(2*b))
 
-	// Solar declination in radians
 	decl := 0.006918 - 0.399912*math.Cos(b) + 0.070257*math.Sin(b) -
 		0.006758*math.Cos(2*b) + 0.000907*math.Sin(2*b) -
 		0.002697*math.Cos(3*b) + 0.00148*math.Sin(3*b)
 
-	// Hour angle calculation
 	latRad := lat * deg2rad
 	zenith := 90.833 * deg2rad
 
 	cosHA := math.Cos(zenith)/(math.Cos(latRad)*math.Cos(decl)) - math.Tan(latRad)*math.Tan(decl)
 
-	if cosHA < -1 || cosHA > 1 {
+	polar := cosHA < -1 || cosHA > 1
+	if polar {
 		return &Result{
-			Sunrise:   "N/A",
-			Sunset:    "N/A",
-			DayLength: "N/A (polar day/night)",
+			SunriseUTC:   "N/A",
+			SunsetUTC:    "N/A",
+			SunriseLocal: "N/A",
+			SunsetLocal:  "N/A",
+			DayLength:    "N/A (polar day/night)",
+			Timezone:     loc.String(),
 		}, nil
 	}
 
-	ha := math.Acos(cosHA) * rad2deg // Convert to degrees
+	ha := math.Acos(cosHA) * rad2deg
 
-	// Calculate sunrise and sunset times in UTC minutes from midnight
-	sunriseUTC := 720 - 4*(lon+ha) - eqtime
-	sunsetUTC := 720 - 4*(lon-ha) - eqtime
+	sunriseUTCMin := 720 - 4*(lon+ha) - eqtime
+	sunsetUTCMin := 720 - 4*(lon-ha) - eqtime
 
-	// Calculate timezone offset in minutes based on longitude
-	tzOffset := int(math.Round(lon/15.0)) * 60
+	sunriseUTC := date.Add(time.Duration(math.Round(sunriseUTCMin)) * time.Minute).UTC()
+	sunsetUTC := date.Add(time.Duration(math.Round(sunsetUTCMin)) * time.Minute).UTC()
 
-	// Convert to local time
-	sunriseLocal := sunriseUTC + float64(tzOffset)
-	sunsetLocal := sunsetUTC + float64(tzOffset)
+	sunriseLocal := sunriseUTC.In(loc)
+	sunsetLocal := sunsetUTC.In(loc)
 
-	// Normalize to 0-1440 range
-	sunriseLocal = normalizeMinutes(sunriseLocal)
-	sunsetLocal = normalizeMinutes(sunsetLocal)
+	tzName := loc.String()
+	if tzName == "" {
+		tzName = "UTC"
+	}
 
 	return &Result{
-		Sunrise:   minutesToTimeOfDay(sunriseLocal),
-		Sunset:    minutesToTimeOfDay(sunsetLocal),
-		DayLength: formatDayLength(sunsetLocal - sunriseLocal),
+		SunriseUTC:   FormatTime(sunriseUTC),
+		SunsetUTC:    FormatTime(sunsetUTC),
+		SunriseLocal: FormatTime(sunriseLocal),
+		SunsetLocal:  FormatTime(sunsetLocal),
+		DayLength:    formatDayLengthFromTimes(sunriseLocal, sunsetLocal),
+		Timezone:     tzName,
 	}, nil
+}
+
+func resolveLocation(tz string) (*time.Location, error) {
+	if tz == "" {
+		return time.UTC, nil
+	}
+	return time.LoadLocation(tz)
+}
+
+func formatTimeWithSeconds(t time.Time) string {
+	return t.Format("15:04:05")
+}
+
+func formatSunsetWithSeconds(t time.Time) string {
+	return t.Format("15:04")
+}
+
+func formatDayLengthFromTimes(start, end time.Time) string {
+	dur := end.Sub(start)
+	if dur < 0 {
+		dur += 24 * time.Hour
+	}
+	totalMinutes := int(dur.Minutes())
+	hours := totalMinutes / 60
+	mins := totalMinutes % 60
+	return fmt.Sprintf("%dh %dm", hours, mins)
 }
 
 func normalizeMinutes(m float64) float64 {

@@ -2,9 +2,12 @@ import { useState } from 'react'
 import './App.css'
 
 interface SunResult {
-  sunrise: string
-  sunset: string
+  sunrise_utc: string
+  sunset_utc: string
+  sunrise_local: string
+  sunset_local: string
   day_length: string
+  timezone: string
 }
 
 function App() {
@@ -14,6 +17,7 @@ function App() {
     const today = new Date()
     return today.toISOString().split('T')[0]
   })
+  const [tz, setTz] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone)
   const [result, setResult] = useState<SunResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -48,6 +52,7 @@ function App() {
         lat: lat.toString(),
         lon: lon.toString(),
         date: date,
+        tz,
       })
 
       const response = await fetch(`/api/sun?${params}`)
@@ -112,6 +117,17 @@ function App() {
                 required
               />
             </div>
+
+            <div className="form-group">
+              <label htmlFor="tz">Timezone</label>
+              <input
+                id="tz"
+                type="text"
+                value={tz}
+                onChange={(e) => setTz(e.target.value)}
+                placeholder="e.g. Europe/Helsinki"
+              />
+            </div>
           </div>
 
           <button type="submit" disabled={loading} className="submit-btn">
@@ -123,15 +139,23 @@ function App() {
 
         {result && (
           <div className="results">
-            <h2>Results</h2>
+            <h2>Results ({result.timezone})</h2>
             <div className="result-cards">
               <div className="card">
-                <h3>Sunrise</h3>
-                <p className="time">{result.sunrise}</p>
+                <h3>Sunrise (UTC)</h3>
+                <p className="time">{result.sunrise_utc}</p>
               </div>
               <div className="card">
-                <h3>Sunset</h3>
-                <p className="time">{result.sunset}</p>
+                <h3>Sunset (UTC)</h3>
+                <p className="time">{result.sunset_utc}</p>
+              </div>
+              <div className="card">
+                <h3>Sunrise ({result.timezone})</h3>
+                <p className="time">{result.sunrise_local}</p>
+              </div>
+              <div className="card">
+                <h3>Sunset ({result.timezone})</h3>
+                <p className="time">{result.sunset_local}</p>
               </div>
               <div className="card">
                 <h3>Day Length</h3>
