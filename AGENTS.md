@@ -27,6 +27,8 @@ The Go binary embeds the Vite build output via `//go:embed all:dist` in `backend
   - `/api/sun` — JSON API (latitude, longitude, optional date/timezone params)
   - `/` — serves embedded frontend via `backend/internal/web`; falls back to `index.html` for SPA routing
 - `frontend` — React 19 + TypeScript 6 + Vite 8 (single page app, no router library)
+  - `MapModal.tsx` — Leaflet map in a modal; click selects coordinates and auto-triggers calculation
+  - Dependencies: `leaflet`, `react-leaflet`, `@types/leaflet`
 - `backend/internal/sun` — pure calculation logic, no external dependencies
 - `backend/internal/web` — embedded static file serving (`//go:embed all:dist`)
 

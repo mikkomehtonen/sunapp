@@ -5,6 +5,7 @@ A sunrise/sunset calculator with timezone support. Go backend, React frontend.
 ## Features
 
 - Calculates sunrise and sunset times for any location on Earth
+- Interactive Leaflet map for click-to-select location picking
 - Explicit IANA timezone support (`tz` parameter)
 - Returns times in both UTC and local timezone
 - Handles polar day/night edge cases gracefully
@@ -17,7 +18,7 @@ A sunrise/sunset calculator with timezone support. Go backend, React frontend.
 | Layer      | Tools                          |
 |------------|--------------------------------|
 | Backend    | Go, standard library `net/http` |
-| Frontend   | React, TypeScript, Vite        |
+| Frontend   | React, TypeScript, Vite, Leaflet |
 | Build      | Make                           |
 
 ## Quick Start
@@ -126,6 +127,7 @@ sunapp/
 │   └── go.mod
 ├── frontend/
 │   ├── src/App.tsx                  # Main React component
+│   ├── src/MapModal.tsx             # Leaflet map modal for location selection
 │   ├── src/App.css                  # Styles
 │   └── vite.config.ts               # Vite config with API proxy
 ├── Makefile                         # Build and dev commands

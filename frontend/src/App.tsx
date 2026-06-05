@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import MapModal from './MapModal'
 
 interface SunResult {
   sunrise_local: string
@@ -19,14 +20,14 @@ function App() {
   const [result, setResult] = useState<SunResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [showMapModal, setShowMapModal] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const calculateSunTimes = async (latVal: string, lonVal: string, dateVal: string, tzVal: string) => {
     setError(null)
     setResult(null)
 
-    const latNum = parseFloat(lat)
-    const lonNum = parseFloat(lon)
+    const latNum = parseFloat(latVal)
+    const lonNum = parseFloat(lonVal)
 
     if (isNaN(latNum) || isNaN(lonNum)) {
       setError('Latitude and longitude must be valid numbers')
@@ -47,10 +48,10 @@ function App() {
 
     try {
       const params = new URLSearchParams({
-        lat: lat.toString(),
-        lon: lon.toString(),
-        date: date,
-        tz,
+        lat: latVal,
+        lon: lonVal,
+        date: dateVal,
+        tz: tzVal,
       })
 
       const response = await fetch(`/api/sun?${params}`)
@@ -69,6 +70,20 @@ function App() {
     }
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await calculateSunTimes(lat, lon, date, tz)
+  }
+
+  const handleMapSelect = async (selectedLat: number, selectedLon: number) => {
+    setShowMapModal(false)
+    const newLat = selectedLat.toFixed(4)
+    const newLon = selectedLon.toFixed(4)
+    setLat(newLat)
+    setLon(newLon)
+    await calculateSunTimes(newLat, newLon, date, tz)
+  }
+
   return (
     <div className="app">
       <header>
@@ -77,6 +92,14 @@ function App() {
       </header>
 
       <main>
+        <button
+          type="button"
+          className="map-btn"
+          onClick={() => setShowMapModal(true)}
+        >
+          Select from map
+        </button>
+
         <form onSubmit={handleSubmit} className="sun-form">
           <div className="form-grid">
             <div className="form-group">
@@ -155,6 +178,14 @@ function App() {
           </div>
         )}
       </main>
+
+      <MapModal
+        isOpen={showMapModal}
+        onClose={() => setShowMapModal(false)}
+        onSelect={handleMapSelect}
+        initialLat={parseFloat(lat)}
+        initialLon={parseFloat(lon)}
+      />
     </div>
   )
 }
