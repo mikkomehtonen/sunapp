@@ -36,11 +36,32 @@ Start the backend and frontend in separate terminals:
 # Terminal 1 — backend
 make dev-backend
 
-# Terminal 2 — frontend  
+# Terminal 2 — frontend
 make dev-frontend
 ```
 
 Open http://localhost:5173 in your browser.
+
+### Production Build
+
+The Go binary embeds the Vite frontend, producing a single self-contained executable:
+
+```bash
+make check          # builds frontend, copies dist, builds backend
+./backend/server    # serves everything on :8080
+```
+
+Or step by step:
+
+```bash
+cd frontend && npm run build
+rm -rf ../backend/internal/web/dist
+mkdir -p ../backend/internal/web
+cp -r dist ../backend/internal/web/dist
+cd ../backend && go build ./cmd/server/
+```
+
+The resulting binary serves both the API and the React SPA with no external files needed. `backend/internal/web/dist/` is a generated directory and should not be committed.
 
 ### Example: Find sunrise in London on the equinox
 
@@ -93,17 +114,22 @@ Error responses:
 ```
 sunapp/
 ├── backend/
-│   ├── cmd/server/main.go       # HTTP server entry point
-│   ├── internal/sun/
-│   │   ├── calculator.go        # Sun calculation logic
-│   │   └── calculator_test.go   # Unit tests
+│   ├── cmd/server/
+│   │   └── main.go                  # HTTP server entry point
+│   ├── internal/
+│   │   ├── sun/
+│   │   │   ├── calculator.go        # Sun calculation logic
+│   │   │   └── calculator_test.go   # Unit tests
+│   │   └── web/
+│   │       ├── serve.go             # Embedded static file handler
+│   │       └── dist/                # Copied from frontend/dist at build time (git-ignored)
 │   └── go.mod
 ├── frontend/
-│   ├── src/App.tsx              # Main React component
-│   ├── src/App.css              # Styles
-│   └── vite.config.ts           # Vite config with API proxy
-├── Makefile                     # Build and dev commands
-└── AGENTS.md                    # Agent development instructions
+│   ├── src/App.tsx                  # Main React component
+│   ├── src/App.css                  # Styles
+│   └── vite.config.ts               # Vite config with API proxy
+├── Makefile                         # Build and dev commands
+└── AGENTS.md                        # Agent development instructions
 ```
 
 ## Make Targets
@@ -136,6 +162,7 @@ The test suite covers:
 ### Backend
 
 ```bash
+make build-frontend-dist
 cd backend && go build ./cmd/server/
 ```
 

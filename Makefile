@@ -1,5 +1,12 @@
 .PHONY: dev-backend dev-frontend test check clean
 
+.PHONY: build-frontend-dist
+build-frontend-dist:
+	cd frontend && npm run build
+	rm -rf backend/internal/web/dist
+	mkdir -p backend/internal/web
+	cp -r frontend/dist backend/internal/web/dist
+
 dev-backend:
 	cd backend && go run cmd/server/main.go
 
@@ -9,7 +16,7 @@ dev-frontend:
 test:
 	cd backend && go test ./internal/sun/... -v
 
-check:
+check: build-frontend-dist
 	@echo "=== Running backend tests ==="
 	cd backend && go test ./internal/sun/... -v
 	@echo ""
@@ -26,4 +33,5 @@ check:
 
 clean:
 	rm -f backend/server
-	cd frontend && rm -rf dist
+	rm -rf backend/internal/web/dist
+	rm -rf frontend/dist

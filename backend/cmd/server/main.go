@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/user/sunapp/backend/internal/sun"
+	"github.com/user/sunapp/backend/internal/web"
 )
 
 func sunHandler(w http.ResponseWriter, r *http.Request) {
@@ -74,6 +75,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/sun", sunHandler)
+	mux.Handle("/", web.NewHandler())
 
 	port := "8080"
 	log.Printf("Starting server on http://localhost:%s", port)
