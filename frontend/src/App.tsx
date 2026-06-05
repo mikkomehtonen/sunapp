@@ -9,8 +9,8 @@ interface SunResult {
 }
 
 function App() {
-  const [lat, setLat] = useState('51.5074')
-  const [lon, setLon] = useState('-0.1278')
+  const [lat, setLat] = useState('61.5')
+  const [lon, setLon] = useState('23.75')
   const [date, setDate] = useState(() => {
     const today = new Date()
     return today.toISOString().split('T')[0]
@@ -87,7 +87,7 @@ function App() {
                 step="any"
                 value={lat}
                 onChange={(e) => setLat(e.target.value)}
-                placeholder="e.g. 51.5074"
+                placeholder="e.g. 61.5"
                 required
               />
             </div>
@@ -100,7 +100,7 @@ function App() {
                 step="any"
                 value={lon}
                 onChange={(e) => setLon(e.target.value)}
-                placeholder="e.g. -0.1278"
+                placeholder="e.g. 23.75"
                 required
               />
             </div>
