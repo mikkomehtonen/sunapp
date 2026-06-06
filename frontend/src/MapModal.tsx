@@ -11,7 +11,6 @@ L.Icon.Default.mergeOptions({
 })
 
 interface MapModalProps {
-  isOpen: boolean
   onClose: () => void
   onSelect: (lat: number, lon: number) => void
   initialLat?: number
@@ -34,10 +33,8 @@ function getInitialPosition(initialLat?: number, initialLon?: number): [number, 
   return [61.5, 23.75]
 }
 
-function MapModal({ isOpen, onClose, onSelect, initialLat, initialLon }: MapModalProps) {
+function MapModal({ onClose, onSelect, initialLat, initialLon }: MapModalProps) {
   const [position, setPosition] = useState<[number, number]>(() => getInitialPosition(initialLat, initialLon))
-
-  if (!isOpen) return null
 
   const handleSelect = (lat: number, lon: number) => {
     setPosition([lat, lon])

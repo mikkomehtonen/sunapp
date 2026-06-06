@@ -179,13 +179,14 @@ function App() {
         )}
       </main>
 
-      <MapModal
-        isOpen={showMapModal}
-        onClose={() => setShowMapModal(false)}
-        onSelect={handleMapSelect}
-        initialLat={parseFloat(lat)}
-        initialLon={parseFloat(lon)}
-      />
+      {showMapModal && (
+        <MapModal
+          onClose={() => setShowMapModal(false)}
+          onSelect={handleMapSelect}
+          initialLat={parseFloat(lat)}
+          initialLon={parseFloat(lon)}
+        />
+      )}
     </div>
   )
 }
