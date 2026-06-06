@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/user/sunapp/backend/internal/sun"
@@ -88,10 +91,31 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	log.Printf("Starting server on http://localhost:%s", port)
-	log.Printf("API endpoint: http://localhost:%s/api/sun?lat=51.5074&lon=-0.1278&date=2024-06-21", port)
 
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
-		log.Fatalf("Server failed to start: %v", err)
+	server := &http.Server{
+		Addr:    ":" + port,
+		Handler: mux,
 	}
+
+	go func() {
+		log.Printf("Starting server on http://localhost:%s", port)
+		log.Printf("API endpoint: http://localhost:%s/api/sun?lat=51.5074&lon=-0.1278&date=2024-06-21", port)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server failed to start: %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("Shutting down server...")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+
+	log.Println("Server stopped")
 }

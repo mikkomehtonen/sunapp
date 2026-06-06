@@ -13,6 +13,7 @@ A sunrise/sunset calculator with timezone support. Go backend, React frontend.
 - Input validation for coordinates, dates, and timezones
 - Fast, dependency-free Go backend
 - Self-contained binary with embedded frontend and map markers
+- Graceful shutdown on SIGINT/SIGTERM with 5-second timeout
 
 ## Tech Stack
 
