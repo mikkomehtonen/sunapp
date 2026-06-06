@@ -257,6 +257,60 @@ header p {
   font-size: 0.9rem;
 }
 
+/* Day/Night bar */
+.day-night-bar {
+  margin-top: 1.5rem;
+}
+
+.day-night-bar-track {
+  display: flex;
+  height: 32px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.bar-segment.night {
+  background: var(--bg);
+}
+
+.bar-segment.day {
+  background: var(--accent);
+}
+
+.day-night-bar-labels {
+  position: relative;
+  height: 1.4em;
+  margin-top: 0.25rem;
+}
+
+.bar-label {
+  position: absolute;
+  font-size: 0.7rem;
+  color: var(--text);
+  opacity: 0.7;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.bar-label-start {
+  left: 0;
+  transform: none;
+}
+
+.bar-label-end {
+  left: 100%;
+  transform: translateX(-100%);
+}
+
+.day-night-bar-label-center {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text);
+  opacity: 0.8;
+  margin-top: 0.5rem;
+}
+
 @media (max-width: 768px) {
   .map-modal {
     width: 95vw;

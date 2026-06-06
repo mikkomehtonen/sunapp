@@ -13,12 +13,15 @@ const (
 
 // Result holds sunrise/sunset calculation results.
 type Result struct {
-	SunriseUTC   string `json:"sunrise_utc"`
-	SunsetUTC    string `json:"sunset_utc"`
-	SunriseLocal string `json:"sunrise_local"`
-	SunsetLocal  string `json:"sunset_local"`
-	DayLength    string `json:"day_length"`
-	Timezone     string `json:"timezone"`
+	SunriseUTC           string `json:"sunrise_utc"`
+	SunsetUTC            string `json:"sunset_utc"`
+	SunriseLocal         string `json:"sunrise_local"`
+	SunsetLocal          string `json:"sunset_local"`
+	DayLength            string `json:"day_length"`
+	Timezone             string `json:"timezone"`
+	SunriseMinutesLocal  int    `json:"sunrise_minutes_local"`
+	SunsetMinutesLocal   int    `json:"sunset_minutes_local"`
+	PolarType            string `json:"polar_type"`
 }
 
 // CalculateSunTimes computes sunrise and sunset times for a given
@@ -53,15 +56,30 @@ func CalculateSunTimes(lat, lon float64, date time.Time, tz string) (*Result, er
 
 	cosHA := math.Cos(zenith)/(math.Cos(latRad)*math.Cos(decl)) - math.Tan(latRad)*math.Tan(decl)
 
-	polar := cosHA < -1 || cosHA > 1
-	if polar {
+	switch {
+	case cosHA < -1:
 		return &Result{
-			SunriseUTC:   "N/A",
-			SunsetUTC:    "N/A",
-			SunriseLocal: "N/A",
-			SunsetLocal:  "N/A",
-			DayLength:    "N/A (polar day/night)",
-			Timezone:     loc.String(),
+			SunriseUTC:          "N/A",
+			SunsetUTC:           "N/A",
+			SunriseLocal:        "N/A",
+			SunsetLocal:         "N/A",
+			DayLength:           "Midnight sun",
+			Timezone:            loc.String(),
+			SunriseMinutesLocal: -1,
+			SunsetMinutesLocal:  -1,
+			PolarType:           "midnight_sun",
+		}, nil
+	case cosHA > 1:
+		return &Result{
+			SunriseUTC:          "N/A",
+			SunsetUTC:           "N/A",
+			SunriseLocal:        "N/A",
+			SunsetLocal:         "N/A",
+			DayLength:           "Polar night",
+			Timezone:            loc.String(),
+			SunriseMinutesLocal: -1,
+			SunsetMinutesLocal:  -1,
+			PolarType:           "polar_night",
 		}, nil
 	}
 
@@ -81,13 +99,19 @@ func CalculateSunTimes(lat, lon float64, date time.Time, tz string) (*Result, er
 		tzName = "UTC"
 	}
 
+	sunriseMinutes := sunriseLocal.Hour()*60 + sunriseLocal.Minute()
+	sunsetMinutes := sunsetLocal.Hour()*60 + sunsetLocal.Minute()
+
 	return &Result{
-		SunriseUTC:   FormatTime(sunriseUTC),
-		SunsetUTC:    FormatTime(sunsetUTC),
-		SunriseLocal: FormatTime(sunriseLocal),
-		SunsetLocal:  FormatTime(sunsetLocal),
-		DayLength:    formatDayLengthFromTimes(sunriseLocal, sunsetLocal),
-		Timezone:     tzName,
+		SunriseUTC:           FormatTime(sunriseUTC),
+		SunsetUTC:            FormatTime(sunsetUTC),
+		SunriseLocal:         FormatTime(sunriseLocal),
+		SunsetLocal:          FormatTime(sunsetLocal),
+		DayLength:            formatDayLengthFromTimes(sunriseLocal, sunsetLocal),
+		Timezone:             tzName,
+		SunriseMinutesLocal:  sunriseMinutes,
+		SunsetMinutesLocal:   sunsetMinutes,
+		PolarType:            "",
 	}, nil
 }
 

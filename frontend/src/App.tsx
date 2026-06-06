@@ -1,13 +1,8 @@
 import { useState } from 'react'
 import './App.css'
 import MapModal from './MapModal'
-
-interface SunResult {
-  sunrise_local: string
-  sunset_local: string
-  day_length: string
-  timezone: string
-}
+import DayNightBar from './DayNightBar'
+import type { SunResult } from './types'
 
 function App() {
   const [lat, setLat] = useState('61.5')
@@ -184,6 +179,7 @@ function App() {
                 <p className="time">{result.day_length}</p>
               </div>
             </div>
+            <DayNightBar result={result} />
           </div>
         )}
       </main>
