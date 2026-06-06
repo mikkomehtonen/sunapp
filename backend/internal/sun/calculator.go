@@ -96,14 +96,6 @@ func resolveLocation(tz string) (*time.Location, error) {
 	return time.LoadLocation(tz)
 }
 
-func formatTimeWithSeconds(t time.Time) string {
-	return t.Format("15:04:05")
-}
-
-func formatSunsetWithSeconds(t time.Time) string {
-	return t.Format("15:04")
-}
-
 func formatDayLengthFromTimes(start, end time.Time) string {
 	dur := end.Sub(start)
 	if dur < 0 {
@@ -115,34 +107,8 @@ func formatDayLengthFromTimes(start, end time.Time) string {
 	return fmt.Sprintf("%dh %dm", hours, mins)
 }
 
-func normalizeMinutes(m float64) float64 {
-	for m < 0 {
-		m += 1440
-	}
-	for m >= 1440 {
-		m -= 1440
-	}
-	return m
-}
-
 func isLeapYear(year int) bool {
 	return (year%4 == 0 && year%100 != 0) || year%400 == 0
-}
-
-func minutesToTimeOfDay(minutes float64) string {
-	totalMinutes := int(math.Round(minutes))
-	hours := totalMinutes / 60
-	mins := totalMinutes % 60
-	return fmt.Sprintf("%02d:%02d", hours, mins)
-}
-
-func formatDayLength(minutes float64) string {
-	if minutes < 0 {
-		return "0h 0m"
-	}
-	hours := int(minutes / 60)
-	mins := int(minutes) % 60
-	return fmt.Sprintf("%dh %dm", hours, mins)
 }
 
 // FormatTime formats a time for display as "HH:MM".
@@ -151,12 +117,4 @@ func FormatTime(t time.Time) string {
 		return "N/A"
 	}
 	return t.Format("15:04")
-}
-
-// FormatTimeDetailed formats a time for display as "HH:MM:SS".
-func FormatTimeDetailed(t time.Time) string {
-	if t.IsZero() {
-		return "N/A"
-	}
-	return t.Format("15:04:05")
 }

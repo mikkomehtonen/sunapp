@@ -1,7 +1,6 @@
 package sun
 
 import (
-	"math"
 	"testing"
 	"time"
 )
@@ -144,62 +143,6 @@ func TestCalculateSunTimes_InvalidTimezone(t *testing.T) {
 	_, err := CalculateSunTimes(lat, lon, date, "Foo/Bar")
 	if err == nil {
 		t.Error("expected error for invalid timezone")
-	}
-}
-
-func TestMinutesToTimeOfDay(t *testing.T) {
-	tests := []struct {
-		minutes  float64
-		expected string
-	}{
-		{60, "01:00"},
-		{720, "12:00"},
-		{1080, "18:00"},
-		{1380, "23:00"},
-	}
-
-	for _, tt := range tests {
-		result := minutesToTimeOfDay(tt.minutes)
-		if result != tt.expected {
-			t.Errorf("minutesToTimeOfDay(%v) = %v, want %v", tt.minutes, result, tt.expected)
-		}
-	}
-}
-
-func TestFormatDayLength(t *testing.T) {
-	tests := []struct {
-		minutes  float64
-		expected string
-	}{
-		{60, "1h 0m"},
-		{123, "2h 3m"},
-		{720, "12h 0m"},
-		{-1, "0h 0m"},
-	}
-
-	for _, tt := range tests {
-		result := formatDayLength(tt.minutes)
-		if result != tt.expected {
-			t.Errorf("formatDayLength(%v) = %v, want %v", tt.minutes, result, tt.expected)
-		}
-	}
-}
-
-func TestNormalizeMinutes(t *testing.T) {
-	tests := []struct {
-		input    float64
-		expected float64
-	}{
-		{-60, 1380},
-		{1500, 60},
-		{720, 720},
-	}
-
-	for _, tt := range tests {
-		result := normalizeMinutes(tt.input)
-		if math.Abs(result-tt.expected) > 0.0001 {
-			t.Errorf("normalizeMinutes(%v) = %v, want %v", tt.input, result, tt.expected)
-		}
 	}
 }
 
