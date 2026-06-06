@@ -288,6 +288,10 @@ header p {
   border-radius: 0 4px 4px 0;
 }
 
+.bar-segment-first.bar-segment-last {
+  border-radius: 4px;
+}
+
 .bar-marker {
   position: absolute;
   width: 10px;

@@ -6,6 +6,35 @@ interface DayNightBarProps {
 
 const TOTAL_MINUTES = 1440
 
+/**
+ * Computes a linear gradient for a day segment so that it is brightest
+ * at mid-day and dims toward the sunrise/sunset edges.
+ *
+ * @param segStart - Segment start in minutes (0-1440)
+ * @param segEnd - Segment end in minutes (0-1440)
+ * @param peak - Mid-day position in minutes
+ * @param dim - Darker color at edges
+ * @param bright - Brightest color at peak
+ */
+function computeDayGradient(segStart: number, segEnd: number, peak: number, dim: string, bright: string): string {
+  const segLen = segEnd - segStart
+  // Position of peak relative to segment (0 = start, 1 = end)
+  const peakRel = (peak - segStart) / segLen
+
+  if (peakRel <= 0) {
+    // Peak is before segment — fade from bright to dim
+    return `linear-gradient(to right, ${bright}, ${dim})`
+  }
+  if (peakRel >= 1) {
+    // Peak is after segment — fade from dim to bright
+    return `linear-gradient(to right, ${dim}, ${bright})`
+  }
+
+  // Peak is inside segment — bright at peak, dim at both edges
+  const pct = Math.round(peakRel * 100)
+  return `linear-gradient(to right, ${dim}, ${bright} ${pct}%, ${dim})`
+}
+
 function DayNightBar({ result }: DayNightBarProps) {
   if (!result) return null
 
@@ -46,24 +75,36 @@ function DayNightBar({ result }: DayNightBarProps) {
 
   const isWrapped = sunrise_minutes_local > sunset_minutes_local
 
+  // Mid-day: center of the daylight period
+  // In wrapped case the naive average lands in the night gap, so shift by 12h
+  const midDayMinutes = isWrapped
+    ? ((sunrise_minutes_local + sunset_minutes_local) / 2 + TOTAL_MINUTES / 2) % TOTAL_MINUTES
+    : (sunrise_minutes_local + sunset_minutes_local) / 2
+
+  // Gradient colors for day segments (dim at edges, bright at mid-day)
+  const dayDim = '#e08a15'
+  const dayBright = '#ffd080'
+
   // Build segments (skip zero-width)
-  const segments: Array<{ type: 'night' | 'day'; width: number }> = []
+  const segments: Array<{ type: 'night' | 'day'; width: number; gradient?: string }> = []
 
   if (isWrapped) {
     // day (0-sunset), night (sunset-sunrise), day (sunrise-24)
     const w1 = sunset_minutes_local / TOTAL_MINUTES * 100
     const w2 = (sunrise_minutes_local - sunset_minutes_local) / TOTAL_MINUTES * 100
     const w3 = (TOTAL_MINUTES - sunrise_minutes_local) / TOTAL_MINUTES * 100
-    if (w1 > 0) segments.push({ type: 'day', width: w1 })
+    if (w1 > 0) segments.push({ type: 'day', width: w1, gradient: computeDayGradient(0, sunset_minutes_local, midDayMinutes, dayDim, dayBright) })
     if (w2 > 0) segments.push({ type: 'night', width: w2 })
-    if (w3 > 0) segments.push({ type: 'day', width: w3 })
+    // Second day segment: add TOTAL_MINUTES to peak so it falls "after" the segment
+    // in linear coordinate space (handles circular time correctly)
+    if (w3 > 0) segments.push({ type: 'day', width: w3, gradient: computeDayGradient(sunrise_minutes_local, TOTAL_MINUTES, midDayMinutes + TOTAL_MINUTES, dayDim, dayBright) })
   } else {
     // night (0-sunrise), day (sunrise-sunset), night (sunset-24)
     const w1 = sunrise_minutes_local / TOTAL_MINUTES * 100
     const w2 = (sunset_minutes_local - sunrise_minutes_local) / TOTAL_MINUTES * 100
     const w3 = (TOTAL_MINUTES - sunset_minutes_local) / TOTAL_MINUTES * 100
     if (w1 > 0) segments.push({ type: 'night', width: w1 })
-    if (w2 > 0) segments.push({ type: 'day', width: w2 })
+    if (w2 > 0) segments.push({ type: 'day', width: w2, gradient: computeDayGradient(sunrise_minutes_local, sunset_minutes_local, midDayMinutes, dayDim, dayBright) })
     if (w3 > 0) segments.push({ type: 'night', width: w3 })
   }
 
@@ -92,7 +133,7 @@ function DayNightBar({ result }: DayNightBarProps) {
           <div
             key={`${seg.type}-${i}`}
             className={`bar-segment ${seg.type}${i === 0 ? ' bar-segment-first' : ''}${i === segments.length - 1 ? ' bar-segment-last' : ''}`}
-            style={{ width: seg.width + '%' }}
+            style={{ width: seg.width + '%', ...(seg.gradient ? { background: seg.gradient } : {}) }}
           />
         ))}
         {showT1 && (
