@@ -247,6 +247,16 @@ header p {
   font-size: 0.9rem;
 }
 
+.map-error {
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  background: var(--error);
+  color: #fff;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 768px) {
   .map-modal {
     width: 95vw;

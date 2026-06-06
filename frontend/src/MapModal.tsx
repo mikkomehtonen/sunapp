@@ -35,6 +35,7 @@ function getInitialPosition(initialLat?: number, initialLon?: number): [number, 
 
 function MapModal({ onClose, onSelect, initialLat, initialLon }: MapModalProps) {
   const [position, setPosition] = useState<[number, number]>(() => getInitialPosition(initialLat, initialLon))
+  const [tileError, setTileError] = useState(false)
 
   const handleSelect = (lat: number, lon: number) => {
     setPosition([lat, lon])
@@ -57,11 +58,17 @@ function MapModal({ onClose, onSelect, initialLat, initialLon }: MapModalProps) 
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              eventHandlers={{
+                tileerror: () => setTileError(true),
+              }}
             />
             <MapClickHandler onSelect={handleSelect} />
             <Marker position={position} />
           </MapContainer>
         </div>
+        {tileError && (
+          <div className="map-error">Map tiles failed to load. Check your internet connection.</div>
+        )}
         <div className="map-coords">
           {position[0].toFixed(4)}, {position[1].toFixed(4)}
         </div>
