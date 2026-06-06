@@ -122,6 +122,35 @@ function DayNightBar({ result }: DayNightBarProps) {
   const showT1 = t1Minutes !== 0 && t1Minutes !== TOTAL_MINUTES
   const showT2 = t2Minutes !== 0 && t2Minutes !== TOTAL_MINUTES
 
+  // Collision detection for labels: combine or hide overlapping labels
+  const MIN_LABEL_GAP_PCT = 8
+
+  // Use circular distance to detect overlap across the 0%/100% boundary
+  const linearDist = Math.abs(t2Pos - t1Pos)
+  const circularDist = Math.min(linearDist, 100 - linearDist)
+  const transitionsOverlap = showT1 && showT2 && circularDist < MIN_LABEL_GAP_PCT
+
+  // Combined label position: account for circular wrapping
+  const combinedLabel = transitionsOverlap ? {
+    text: `${t1Label}–${t2Label}`,
+    pos: linearDist > 50
+      ? ((Math.max(t1Pos, t2Pos) + Math.min(t1Pos, t2Pos) + 100) / 2) % 100
+      : (t1Pos + t2Pos) / 2,
+  } : null
+
+  // Collect positions of all visible transition labels
+  const transitionPositions: number[] = []
+  if (combinedLabel) {
+    transitionPositions.push(combinedLabel.pos)
+  } else {
+    if (showT1) transitionPositions.push(t1Pos)
+    if (showT2) transitionPositions.push(t2Pos)
+  }
+
+  // Hide edge labels that would overlap with any transition label
+  const showStartLabel = transitionPositions.length === 0 || transitionPositions.every(pos => pos >= MIN_LABEL_GAP_PCT)
+  const showEndLabel = transitionPositions.length === 0 || transitionPositions.every(pos => pos <= 100 - MIN_LABEL_GAP_PCT)
+
   const ariaDescription = isWrapped
     ? `Daylight bar: ${sunset_local} to 24 then 00 to ${sunrise_local}`
     : `Daylight bar: ${sunrise_local} to ${sunset_local}`
@@ -149,22 +178,34 @@ function DayNightBar({ result }: DayNightBarProps) {
         {!isWrapped && sunset_minutes_local < TOTAL_MINUTES && <span className="bar-icon bar-icon-right" style={{ left: '100%' }}>🌙</span>}
         {/* Sun at mid-day */}
         <span className="bar-icon" style={{ left: (midDayMinutes / TOTAL_MINUTES * 100) + '%' }}>☀️</span>
-        {showT1 && (
-          <span className="bar-icon" style={{ left: t1Pos + '%' }}>{t1Icon}</span>
-        )}
-        {showT2 && (
-          <span className="bar-icon" style={{ left: t2Pos + '%' }}>{t2Icon}</span>
+        {combinedLabel ? (
+          <span className="bar-icon" style={{ left: combinedLabel.pos + '%' }}>{t1Icon}{t2Icon}</span>
+        ) : (
+          <>
+            {showT1 && (
+              <span className="bar-icon" style={{ left: t1Pos + '%' }}>{t1Icon}</span>
+            )}
+            {showT2 && (
+              <span className="bar-icon" style={{ left: t2Pos + '%' }}>{t2Icon}</span>
+            )}
+          </>
         )}
       </div>
       <div className="day-night-bar-labels">
-        <span className="bar-label bar-label-start">00</span>
-        {showT1 && (
-          <span className="bar-label" style={{ left: t1Pos + '%' }}>{t1Label}</span>
+        {showStartLabel && <span className="bar-label bar-label-start">00</span>}
+        {combinedLabel ? (
+          <span className="bar-label" style={{ left: combinedLabel.pos + '%' }}>{combinedLabel.text}</span>
+        ) : (
+          <>
+            {showT1 && (
+              <span className="bar-label" style={{ left: t1Pos + '%' }}>{t1Label}</span>
+            )}
+            {showT2 && (
+              <span className="bar-label" style={{ left: t2Pos + '%' }}>{t2Label}</span>
+            )}
+          </>
         )}
-        {showT2 && (
-          <span className="bar-label" style={{ left: t2Pos + '%' }}>{t2Label}</span>
-        )}
-        <span className="bar-label bar-label-end">24</span>
+        {showEndLabel && <span className="bar-label bar-label-end">24</span>}
       </div>
     </div>
   )
