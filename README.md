@@ -49,7 +49,7 @@ The Go binary embeds the Vite frontend, producing a single self-contained execut
 
 ```bash
 make check          # builds frontend, copies dist, builds backend
-./backend/server    # serves everything on :8080
+./backend/server    # serves everything on :8080 (or $PORT)
 ```
 
 Or step by step:
@@ -63,6 +63,17 @@ cd ../backend && go build ./cmd/server/
 ```
 
 The resulting binary serves both the API and the React SPA with no external files needed. `backend/internal/web/dist/` is a generated directory and should not be committed.
+
+### Configuration
+
+| Environment Variable | Description | Default |
+|---------------------|-------------|---------|
+| `PORT` | Port to listen on | `8080` |
+
+Example:
+```bash
+PORT=3000 ./backend/server
+```
 
 ### Example: Find sunrise in London on the equinox
 

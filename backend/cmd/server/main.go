@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -83,7 +84,10 @@ func main() {
 	mux.HandleFunc("/api/sun", sunHandler)
 	mux.Handle("/", web.NewHandler())
 
-	port := "8080"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 	log.Printf("Starting server on http://localhost:%s", port)
 	log.Printf("API endpoint: http://localhost:%s/api/sun?lat=51.5074&lon=-0.1278&date=2024-06-21", port)
 
