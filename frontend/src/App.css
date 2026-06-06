@@ -264,24 +264,58 @@ header p {
 
 .day-night-bar-track {
   display: flex;
-  height: 32px;
-  border-radius: 6px;
-  overflow: hidden;
-  border: 1px solid var(--border);
+  align-items: flex-end;
+  position: relative;
 }
 
 .bar-segment.night {
+  height: 8px;
   background: var(--bg);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .bar-segment.day {
+  height: 12px;
   background: var(--accent);
+}
+
+.bar-segment-first {
+  border-radius: 4px 0 0 4px;
+}
+
+.bar-segment-last {
+  border-radius: 0 4px 4px 0;
+}
+
+.bar-marker {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-headline);
+  border: 2px solid var(--border);
+  top: 1px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.day-night-bar-icons {
+  position: relative;
+  height: 1.5em;
+  margin-top: 2px;
+}
+
+.bar-icon {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.85rem;
 }
 
 .day-night-bar-labels {
   position: relative;
   height: 1.4em;
-  margin-top: 0.25rem;
+  margin-top: 0;
 }
 
 .bar-label {

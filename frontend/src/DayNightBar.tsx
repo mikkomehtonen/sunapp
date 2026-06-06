@@ -17,6 +17,9 @@ function DayNightBar({ result }: DayNightBarProps) {
         <div className="day-night-bar-track">
           <div className="bar-segment day" style={{ width: '100%' }} />
         </div>
+        <div className="day-night-bar-icons">
+          <span className="bar-icon" style={{ left: '50%' }}>☀️</span>
+        </div>
         <div className="day-night-bar-label-center">24h daylight</div>
       </div>
     )
@@ -27,6 +30,9 @@ function DayNightBar({ result }: DayNightBarProps) {
       <div className="day-night-bar">
         <div className="day-night-bar-track">
           <div className="bar-segment night" style={{ width: '100%' }} />
+        </div>
+        <div className="day-night-bar-icons">
+          <span className="bar-icon" style={{ left: '50%' }}>🌙</span>
         </div>
         <div className="day-night-bar-label-center">24h darkness</div>
       </div>
@@ -40,22 +46,40 @@ function DayNightBar({ result }: DayNightBarProps) {
 
   const isWrapped = sunrise_minutes_local > sunset_minutes_local
 
-  const seg1: { type: 'night' | 'day'; width: number } = isWrapped
-    ? { type: 'day', width: sunset_minutes_local / TOTAL_MINUTES * 100 }
-    : { type: 'night', width: sunrise_minutes_local / TOTAL_MINUTES * 100 }
+  // Build segments (skip zero-width)
+  const segments: Array<{ type: 'night' | 'day'; width: number }> = []
 
-  const seg2: { type: 'night' | 'day'; width: number } = isWrapped
-    ? { type: 'night', width: (sunrise_minutes_local - sunset_minutes_local) / TOTAL_MINUTES * 100 }
-    : { type: 'day', width: (sunset_minutes_local - sunrise_minutes_local) / TOTAL_MINUTES * 100 }
+  if (isWrapped) {
+    // day (0-sunset), night (sunset-sunrise), day (sunrise-24)
+    const w1 = sunset_minutes_local / TOTAL_MINUTES * 100
+    const w2 = (sunrise_minutes_local - sunset_minutes_local) / TOTAL_MINUTES * 100
+    const w3 = (TOTAL_MINUTES - sunrise_minutes_local) / TOTAL_MINUTES * 100
+    if (w1 > 0) segments.push({ type: 'day', width: w1 })
+    if (w2 > 0) segments.push({ type: 'night', width: w2 })
+    if (w3 > 0) segments.push({ type: 'day', width: w3 })
+  } else {
+    // night (0-sunrise), day (sunrise-sunset), night (sunset-24)
+    const w1 = sunrise_minutes_local / TOTAL_MINUTES * 100
+    const w2 = (sunset_minutes_local - sunrise_minutes_local) / TOTAL_MINUTES * 100
+    const w3 = (TOTAL_MINUTES - sunset_minutes_local) / TOTAL_MINUTES * 100
+    if (w1 > 0) segments.push({ type: 'night', width: w1 })
+    if (w2 > 0) segments.push({ type: 'day', width: w2 })
+    if (w3 > 0) segments.push({ type: 'night', width: w3 })
+  }
 
-  const seg3: { type: 'night' | 'day'; width: number } = isWrapped
-    ? { type: 'day', width: (TOTAL_MINUTES - sunrise_minutes_local) / TOTAL_MINUTES * 100 }
-    : { type: 'night', width: (TOTAL_MINUTES - sunset_minutes_local) / TOTAL_MINUTES * 100 }
+  // Transitions: positions, labels, icons, and per-transition visibility
+  const t1Minutes = isWrapped ? sunset_minutes_local : sunrise_minutes_local
+  const t2Minutes = isWrapped ? sunrise_minutes_local : sunset_minutes_local
+  const t1Pos = t1Minutes / TOTAL_MINUTES * 100
+  const t2Pos = t2Minutes / TOTAL_MINUTES * 100
+  const t1Label = isWrapped ? sunset_local : sunrise_local
+  const t2Label = isWrapped ? sunrise_local : sunset_local
+  const t1Icon = isWrapped ? '🌇' : '🌅'
+  const t2Icon = isWrapped ? '🌅' : '🌇'
 
-  const label2 = isWrapped ? sunset_local : sunrise_local
-  const label3 = isWrapped ? sunrise_local : sunset_local
-  const label2Pos = seg1.width
-  const label3Pos = seg1.width + seg2.width
+  // Omit marker/icon/label if transition is exactly at 0 or 1440 (would overlap edge labels)
+  const showT1 = t1Minutes !== 0 && t1Minutes !== TOTAL_MINUTES
+  const showT2 = t2Minutes !== 0 && t2Minutes !== TOTAL_MINUTES
 
   const ariaDescription = isWrapped
     ? `Daylight bar: ${sunset_local} to 24 then 00 to ${sunrise_local}`
@@ -64,14 +88,36 @@ function DayNightBar({ result }: DayNightBarProps) {
   return (
     <div className="day-night-bar" aria-label={ariaDescription}>
       <div className="day-night-bar-track">
-        <div className={`bar-segment ${seg1.type}`} style={{ width: seg1.width + '%' }} />
-        <div className={`bar-segment ${seg2.type}`} style={{ width: seg2.width + '%' }} />
-        <div className={`bar-segment ${seg3.type}`} style={{ width: seg3.width + '%' }} />
+        {segments.map((seg, i) => (
+          <div
+            key={`${seg.type}-${i}`}
+            className={`bar-segment ${seg.type}${i === 0 ? ' bar-segment-first' : ''}${i === segments.length - 1 ? ' bar-segment-last' : ''}`}
+            style={{ width: seg.width + '%' }}
+          />
+        ))}
+        {showT1 && (
+          <div className="bar-marker" style={{ left: t1Pos + '%' }} />
+        )}
+        {showT2 && (
+          <div className="bar-marker" style={{ left: t2Pos + '%' }} />
+        )}
+      </div>
+      <div className="day-night-bar-icons">
+        {showT1 && (
+          <span className="bar-icon" style={{ left: t1Pos + '%' }}>{t1Icon}</span>
+        )}
+        {showT2 && (
+          <span className="bar-icon" style={{ left: t2Pos + '%' }}>{t2Icon}</span>
+        )}
       </div>
       <div className="day-night-bar-labels">
         <span className="bar-label bar-label-start">00</span>
-        <span className="bar-label" style={{ left: label2Pos + '%' }}>{label2}</span>
-        <span className="bar-label" style={{ left: label3Pos + '%' }}>{label3}</span>
+        {showT1 && (
+          <span className="bar-label" style={{ left: t1Pos + '%' }}>{t1Label}</span>
+        )}
+        {showT2 && (
+          <span className="bar-label" style={{ left: t2Pos + '%' }}>{t2Label}</span>
+        )}
         <span className="bar-label bar-label-end">24</span>
       </div>
     </div>

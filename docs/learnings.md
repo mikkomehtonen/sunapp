@@ -23,3 +23,11 @@
 **Takeaway**: Shared TypeScript interfaces should be extracted to a dedicated `types.ts` file and imported by all consumers. This ensures single-source-of-truth and compile-time safety across the frontend.
 
 ---
+
+## CSS :first-of-type/:last-of-type are tag-based, not class-based
+**Date**: 2026-06-06
+**Area**: frontend / CSS
+**What happened**: Used `.bar-segment:first-of-type` and `.bar-segment:last-of-type` to apply border-radius to the first/last segments in a flex track. But `.bar-marker` elements (also `<div>`s) were rendered as siblings inside the same container, so `:last-of-type` matched the last `<div>` (a marker), not the last `.bar-segment`. Caused two review failures.
+**Takeaway**: `:first-of-type`/`:last-of-type` match by HTML tag, not class. When mixing element types in the same container, use explicit CSS classes (e.g., `.is-first`/`.is-last`) applied in JSX based on index, or move the mixed-type children into a separate container.
+
+---
