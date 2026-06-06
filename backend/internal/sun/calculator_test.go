@@ -117,6 +117,7 @@ func TestCalculateSunTimes_PolarNight(t *testing.T) {
 	result, err := CalculateSunTimes(lat, lon, date, "Arctic/Longyearbyen")
 	if err != nil {
 		t.Logf("Expected error for invalid or polar timezone: %v", err)
+		return
 	}
 	t.Logf("Svalbard December 21: SunriseUTC=%s, SunsetUTC=%s, SunriseLocal=%s, SunsetLocal=%s, DayLength=%s",
 		result.SunriseUTC, result.SunsetUTC, result.SunriseLocal, result.SunsetLocal, result.DayLength)
