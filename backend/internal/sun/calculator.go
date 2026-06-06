@@ -30,6 +30,8 @@ func CalculateSunTimes(lat, lon float64, date time.Time, tz string) (*Result, er
 		return nil, fmt.Errorf("invalid timezone %q: %w", tz, err)
 	}
 
+	date = time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
+
 	year := date.Year()
 	dayOfYear := date.YearDay()
 	yearLen := 365.0
