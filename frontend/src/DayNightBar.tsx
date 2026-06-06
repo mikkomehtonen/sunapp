@@ -144,6 +144,11 @@ function DayNightBar({ result }: DayNightBarProps) {
         )}
       </div>
       <div className="day-night-bar-icons">
+        {/* Moon at 00/24 if night at those times */}
+        {!isWrapped && sunrise_minutes_local > 0 && <span className="bar-icon bar-icon-left" style={{ left: '0%' }}>🌙</span>}
+        {!isWrapped && sunset_minutes_local < TOTAL_MINUTES && <span className="bar-icon bar-icon-right" style={{ left: '100%' }}>🌙</span>}
+        {/* Sun at mid-day */}
+        <span className="bar-icon" style={{ left: (midDayMinutes / TOTAL_MINUTES * 100) + '%' }}>☀️</span>
         {showT1 && (
           <span className="bar-icon" style={{ left: t1Pos + '%' }}>{t1Icon}</span>
         )}

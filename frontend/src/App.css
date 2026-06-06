@@ -316,6 +316,14 @@ header p {
   font-size: 0.85rem;
 }
 
+.bar-icon-left {
+  transform: none;
+}
+
+.bar-icon-right {
+  transform: translateX(-100%);
+}
+
 .day-night-bar-labels {
   position: relative;
   height: 1.4em;
