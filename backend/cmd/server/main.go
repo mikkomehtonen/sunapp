@@ -12,9 +12,15 @@ import (
 	"github.com/user/sunapp/backend/internal/web"
 )
 
+func writeJSONError(w http.ResponseWriter, message string, status int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(map[string]string{"error": message})
+}
+
 func sunHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		writeJSONError(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -26,27 +32,27 @@ func sunHandler(w http.ResponseWriter, r *http.Request) {
 	tz := query.Get("tz")
 
 	if latStr == "" || lonStr == "" {
-		http.Error(w, "lat and lon query parameters are required", http.StatusBadRequest)
+		writeJSONError(w, "lat and lon query parameters are required", http.StatusBadRequest)
 		return
 	}
 
 	lat, err := strconv.ParseFloat(latStr, 64)
 	if err != nil {
-		http.Error(w, "Invalid lat parameter", http.StatusBadRequest)
+		writeJSONError(w, "Invalid lat parameter", http.StatusBadRequest)
 		return
 	}
 	if lat < -90 || lat > 90 {
-		http.Error(w, "lat must be between -90 and 90", http.StatusBadRequest)
+		writeJSONError(w, "lat must be between -90 and 90", http.StatusBadRequest)
 		return
 	}
 
 	lon, err := strconv.ParseFloat(lonStr, 64)
 	if err != nil {
-		http.Error(w, "Invalid lon parameter", http.StatusBadRequest)
+		writeJSONError(w, "Invalid lon parameter", http.StatusBadRequest)
 		return
 	}
 	if lon < -180 || lon > 180 {
-		http.Error(w, "lon must be between -180 and 180", http.StatusBadRequest)
+		writeJSONError(w, "lon must be between -180 and 180", http.StatusBadRequest)
 		return
 	}
 
@@ -56,14 +62,14 @@ func sunHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		date, err = time.Parse("2006-01-02", dateStr)
 		if err != nil {
-			http.Error(w, "Invalid date parameter. Use YYYY-MM-DD format", http.StatusBadRequest)
+			writeJSONError(w, "Invalid date parameter. Use YYYY-MM-DD format", http.StatusBadRequest)
 			return
 		}
 	}
 
 	result, err := sun.CalculateSunTimes(lat, lon, date, tz)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error calculating sunrise/sunset: %v", err), http.StatusInternalServerError)
+		writeJSONError(w, fmt.Sprintf("Error calculating sunrise/sunset: %v", err), http.StatusInternalServerError)
 		return
 	}
 
