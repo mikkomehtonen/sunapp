@@ -58,7 +58,16 @@ function App() {
 
       if (!response.ok) {
         const text = await response.text()
-        throw new Error(text || 'Failed to fetch sun data')
+        let errorMessage = text || 'Failed to fetch sun data'
+        try {
+          const errorData = JSON.parse(text)
+          if (errorData.error) {
+            errorMessage = errorData.error
+          }
+        } catch {
+          // text is not JSON, use it as-is
+        }
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
