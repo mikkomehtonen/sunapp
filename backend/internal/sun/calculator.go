@@ -13,12 +13,12 @@ const (
 
 // Result holds sunrise/sunset calculation results.
 type Result struct {
-	SunriseUTC    string `json:"sunrise_utc"`
-	SunsetUTC     string `json:"sunset_utc"`
-	SunriseLocal  string `json:"sunrise_local"`
-	SunsetLocal   string `json:"sunset_local"`
-	DayLength     string `json:"day_length"`
-	Timezone      string `json:"timezone"`
+	SunriseUTC   string `json:"sunrise_utc"`
+	SunsetUTC    string `json:"sunset_utc"`
+	SunriseLocal string `json:"sunrise_local"`
+	SunsetLocal  string `json:"sunset_local"`
+	DayLength    string `json:"day_length"`
+	Timezone     string `json:"timezone"`
 }
 
 // CalculateSunTimes computes sunrise and sunset times for a given
