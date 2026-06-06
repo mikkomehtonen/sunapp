@@ -12,6 +12,7 @@ A sunrise/sunset calculator with timezone support. Go backend, React frontend.
 - Responsive dark-themed UI
 - Input validation for coordinates, dates, and timezones
 - Fast, dependency-free Go backend
+- Self-contained binary with embedded frontend and map markers
 
 ## Tech Stack
 
@@ -140,6 +141,7 @@ sunapp/
 │   ├── src/App.tsx                  # Main React component
 │   ├── src/MapModal.tsx             # Leaflet map modal for location selection
 │   ├── src/App.css                  # Styles
+│   ├── public/images/               # Leaflet marker icons (bundled locally)
 │   └── vite.config.ts               # Vite config with API proxy
 ├── Makefile                         # Build and dev commands
 └── AGENTS.md                        # Agent development instructions
