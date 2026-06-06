@@ -20,7 +20,7 @@ func NewHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 
-		if _, err := fs.ReadFile(distFS, strings.TrimPrefix(path, "/")); err == nil {
+		if _, err := fs.Stat(distFS, strings.TrimPrefix(path, "/")); err == nil {
 			http.FileServer(http.FS(distFS)).ServeHTTP(w, r)
 			return
 		}
