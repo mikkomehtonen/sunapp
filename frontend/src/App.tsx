@@ -4,6 +4,8 @@ import MapModal from './MapModal'
 import DayNightBar from './DayNightBar'
 import type { SunResult } from './types'
 
+const logoLinkUrl = import.meta.env.LOGO_LINK_URL
+
 function App() {
   const [lat, setLat] = useState('61.5')
   const [lon, setLon] = useState('23.75')
@@ -91,7 +93,16 @@ function App() {
   return (
     <div className="app">
       <header>
-        <h1>Sunrise &amp; Sunset Calculator</h1>
+        <h1>
+          {logoLinkUrl ? (
+            <a href={logoLinkUrl} className="logo-link">
+              <img src="/favicon.svg" alt="SunApp logo" className="logo" width="32" height="32" />
+            </a>
+          ) : (
+            <img src="/favicon.svg" alt="SunApp logo" className="logo" width="32" height="32" />
+          )}
+          Sunrise &amp; Sunset Calculator
+        </h1>
         <p>Enter a location and date to see sunrise, sunset, and day length.</p>
       </header>
 

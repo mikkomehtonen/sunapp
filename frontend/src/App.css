@@ -46,6 +46,17 @@ header p {
   opacity: 0.8;
 }
 
+.logo {
+  width: 2rem;
+  height: 2rem;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+
+.logo-link {
+  text-decoration: none;
+}
+
 .sun-form {
   background: var(--card-bg);
   padding: 1.5rem;

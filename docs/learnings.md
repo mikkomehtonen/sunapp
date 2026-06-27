@@ -31,3 +31,11 @@
 **Takeaway**: `:first-of-type`/`:last-of-type` match by HTML tag, not class. When mixing element types in the same container, use explicit CSS classes (e.g., `.is-first`/`.is-last`) applied in JSX based on index, or move the mixed-type children into a separate container.
 
 ---
+
+## Exposing unprefixed env vars to a Vite client build
+**Date**: 2026-06-27
+**Area**: frontend / build
+**What happened**: Story 003 required exposing the unprefixed env var `LOGO_LINK_URL` to the React SPA at build time. Vite only auto-exposes `VITE_`-prefixed vars, so `import.meta.env.LOGO_LINK_URL` was injected via `define` using `loadEnv(mode, process.cwd(), '')` and `JSON.stringify(env.LOGO_LINK_URL ?? '')`.
+**Takeaway**: For build-time env vars without the `VITE_` prefix, use the function form of `defineConfig`, call `loadEnv(mode, process.cwd(), '')` with an empty prefix, and map the value through `define` as `'import.meta.env.X': JSON.stringify(env.X ?? '')`. Add a `vite-env.d.ts` `ImportMetaEnv` declaration for type safety. Verify the literal value is baked into `frontend/dist/assets/` with `grep -rlF` after build.
+
+---
