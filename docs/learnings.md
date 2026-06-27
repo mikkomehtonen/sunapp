@@ -36,6 +36,14 @@
 **Date**: 2026-06-27
 **Area**: frontend / build
 **What happened**: Story 003 required exposing the unprefixed env var `LOGO_LINK_URL` to the React SPA at build time. Vite only auto-exposes `VITE_`-prefixed vars, so `import.meta.env.LOGO_LINK_URL` was injected via `define` using `loadEnv(mode, process.cwd(), '')` and `JSON.stringify(env.LOGO_LINK_URL ?? '')`.
-**Takeaway**: For build-time env vars without the `VITE_` prefix, use the function form of `defineConfig`, call `loadEnv(mode, process.cwd(), '')` with an empty prefix, and map the value through `define` as `'import.meta.env.X': JSON.stringify(env.X ?? '')`. Add a `vite-env.d.ts` `ImportMetaEnv` declaration for type safety. Verify the literal value is baked into `frontend/dist/assets/` with `grep -rlF` after build.
+**Takeaway**: For build-time env vars without the `VITE_` prefix, use the function form of `defineConfig`, call `loadEnv(mode, process.cwd(), '')` with an empty prefix, and map the value through `define` as `'import.meta.env.X': JSON.stringify(env.X ?? '')`. Add a `vite-env.d.ts` `ImportMetaEnv` declaration for type safety. Verify the literal value is baked into `frontend/dist/assets/` with `grep -rlF` after build. Note: this only covers the Vite dev server; for runtime config in the embedded SPA see the next entry.
+
+---
+
+## Runtime config for the embedded SPA must be injected by the Go backend
+**Date**: 2026-06-27
+**Area**: architecture / build
+**What happened**: Story 003 baked `LOGO_LINK_URL` into the SPA bundle at build time, but the deployment (`run.sh`) passes it to the container at runtime via `docker run -e LOGO_LINK_URL`. The embedded static bundle cannot read runtime env vars, so the runtime value was ignored and the logo link never appeared.
+**Takeaway**: The embedded SPA is a static bundle — it cannot read runtime env vars on its own. When a config value must be set at runtime (e.g. via `docker run -e`), the Go backend must inject it into the served `index.html` (e.g. a `<script>window.__APP_CONFIG__=...</script>` before `</head>`, with `json.Marshal` escaping HTML chars). The frontend reads `window.__APP_CONFIG__` first, falling back to the Vite build-time `define` for the dev server. Use `??` (not `||`) for the fallback so an empty runtime value is respected. Route both `/` and `/index.html` through the injection — a direct `GET /index.html` otherwise bypasses it via the file server.
 
 ---

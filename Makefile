@@ -18,7 +18,7 @@ test:
 
 check: build-frontend-dist
 	@echo "=== Running backend tests ==="
-	cd backend && go test ./internal/sun/... -v
+	cd backend && go test ./... -v
 	@echo ""
 	@echo "=== Building backend ==="
 	cd backend && go build ./cmd/server/

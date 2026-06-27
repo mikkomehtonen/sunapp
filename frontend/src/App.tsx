@@ -4,7 +4,7 @@ import MapModal from './MapModal'
 import DayNightBar from './DayNightBar'
 import type { SunResult } from './types'
 
-const logoLinkUrl = import.meta.env.LOGO_LINK_URL
+const logoLinkUrl = window.__APP_CONFIG__?.logoLinkUrl ?? import.meta.env.LOGO_LINK_URL
 
 function App() {
   const [lat, setLat] = useState('61.5')

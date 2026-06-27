@@ -34,7 +34,16 @@ The Go binary embeds the Vite build output via `//go:embed all:dist` in `backend
 
 ## Testing
 
-Tests are in `backend/internal/sun/calculator_test.go`. Run with:
+- `backend/internal/sun/calculator_test.go` — sunrise/sunset calculation tests.
+- `backend/internal/web/serve_test.go` — SPA serving + runtime config injection tests.
+
+Run all backend tests (requires `backend/internal/web/dist` to exist — `make check` or `make build-frontend-dist` creates it):
+
+```bash
+cd backend && go test ./... -v
+```
+
+Run just the sun calculation tests (no dist required):
 
 ```bash
 cd backend && go test ./internal/sun/... -v
